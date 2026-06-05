@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Учет оборудования</title>
+</head>
+<body style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; color: #2d3748;">
+
+    <h1 style="color: #44b78b;">Архив техники</h1>
+
+    <!-- ФОРМА ДОБАВЛЕНИЯ -->
+    <div style="background: #f7fafc; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 30px; border-radius: 8px;">
+        <h3 style="margin-top: 0; color: #4a5568;">Внести новое оборудование</h3>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Название устройства:</label>
+                {{ form.name }}
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Серийный номер:</label>
+                {{ form.serial_number }}
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Дата покупки:</label>
+                {{ form.purchase_date }}
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Срок гарантии (в месяцах):</label>
+                {{ form.warranty_months }}
+            </div>
+
+            <button type="submit" style="background: #44b78b; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold;">
+                Сохранить в базу данных
+            </button>
+        </form>
+    </div>
+
+    <!-- ВЫВОД ИНФОРМАЦИИ -->
+    <h2>Список зарегистрированного оборудования:</h2>
+
+    {% for item in equipments %}
+        <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; border-radius: 5px; background-color: #fff;">
+            <h3 style="color: #2b6cb0; margin-top: 0;">{{ item.name }}</h3>
+            <p style="margin: 5px 0;"><strong>Серийный номер:</strong> {{ item.serial_number }}</p>
+            <p style="margin: 5px 0;"><strong>Дата покупки:</strong> {{ item.purchase_date|date:"d.m.Y" }}</p>
+            <p style="margin: 5px 0;"><strong>Гарантия:</strong> {{ item.warranty_months }} мес.</p>
+        </div>
+    {% empty %}
+        <p style="color: #718096; font-style: italic;">Оборудования пока нет. Заполните форму выше, чтобы добавить первое устройство!</p>
+    {% endfor %}
+
+</body>
+</html>

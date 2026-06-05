@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Учет оборудования</title>
     <style>
-        /* Собственные стили, заменяющие Bootstrap */
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; color: #2d3748; }
         .navbar { background-color: #212529; padding: 15px 0; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .navbar-brand { font-size: 20px; font-weight: bold; margin-left: 20px; }
@@ -13,20 +12,22 @@
         .column-form { flex: 1 1 400px; }
         .column-list { flex: 1.5 1 500px; }
         .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; padding: 25px; margin-bottom: 20px; }
-        .card-equipment { border-left: 5px solid #2b6cb0; padding: 15px; margin-bottom: 15px; transition: transform 0.2s; }
+        .card-equipment { padding: 15px; margin-bottom: 15px; transition: transform 0.2s; }
         .card-equipment:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
         .form-label { display: block; margin-bottom: 6px; font-weight: 600; color: #4a5568; font-size: 14px; }
-        /* Стилизация полей ввода Django */
+
         .form-control, input[type="text"], input[type="date"], input[type="number"], textarea {
             width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box; font-size: 14px; margin-bottom: 15px;
         }
         .form-control:focus, input:focus { border-color: #44b78b; outline: none; box-shadow: 0 0 0 3px rgba(68,183,139,0.15); }
+
         .btn { width: 100%; background-color: #44b78b; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
         .btn:hover { background-color: #369671; }
         .badge { background-color: #edf2f7; color: #2b6cb0; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
         code { background-color: #fff5f5; color: #c53030; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 14px; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 10px; border-top: 1px solid #edf2f7; color: #718096; font-size: 13px; }
         h2, h3, h4 { margin-top: 0; color: #1a202c; }
+
         @media (max-width: 768px) { .container { flex-direction: column; } .column-form, .column-list { flex: 1 1 100%; } }
     </style>
 </head>
@@ -39,7 +40,7 @@
 
     <div class="container">
 
-        <!-- ЛЕВАЯ КОЛОНКА: Форма добавления -->
+        <!-- ЛЕВАЯ КОЛОНКА: Форма добавления нового оборудования -->
         <div class="column-form">
             <div class="card">
                 <h4>➕ Новое устройство</h4>
@@ -58,27 +59,27 @@
                     <label class="form-label">Срок гарантии (мес)</label>
                     {{ form.warranty_months }}
 
+                    <label class="form-label">Ячейка хранения чека</label>
+                    {{ form.receipt_location }}
+
                     <button type="submit" class="btn">Сохранить в БД</button>
                 </form>
             </div>
         </div>
 
-        <!-- ПРАВАЯ КОЛОНКА: Список устройств -->
+        <!-- ПРАВАЯ КОЛОНКА: Поиск, фильтры и список устройств -->
         <div class="column-list">
-            <h3>📋 Зарегистрировано в базе данных Архива</h3>
-            <!-- БЛОК ПОИСКА И ФИЛЬТРОВ -->
+            <h3>📋 Зарегистрировано в PostgreSQL</h3>
+
+            <!-- БЛОК ТОЧНОГО ПОИСКА И БЫСТРЫХ ФИЛЬТРОВ -->
             <div style="background: #fff; border: 1px solid #e2e8f0; padding: 15px; margin-bottom: 20px; border-radius: 8px;">
                 <form method="GET" action="{% url 'index' %}" style="display: flex; flex-direction: column; gap: 10px;">
 
-                                        <!-- Поисковая строка -->
                     <div style="display: flex; gap: 10px;">
-                        <!-- Изменили подсказку на "Поиск по серийному номеру..." -->
                         <input type="text" name="search" value="{{ search_query }}" placeholder="Поиск по серийному номеру..." style="margin-bottom: 0; flex-grow: 1;">
                         <button type="submit" class="btn" style="width: auto; padding: 10px 20px; margin-bottom: 0;">Найти</button>
                     </div>
 
-
-                    <!-- Кнопки быстрой фильтрации гарантии -->
                     <div style="display: flex; gap: 10px; align-items: center; margin-top: 5px;">
                         <span style="font-size: 14px; font-weight: bold; color: #4a5568;">Гарантия:</span>
 
@@ -97,15 +98,14 @@
 
                 </form>
             </div>
-            <!-- КОНЕЦ БЛОКА ФИЛЬТРОВ -->
 
-                        {% for item in equipments %}
-                <!-- Динамически меняем цвет левой полосы карточки: синяя для активной, красная для истекшей -->
-                <div class="card card-equipment" style="position: relative; {% if item.is_expired %}border-left: 5px solid #e53e3e; background-color: #ffffff;{% else %}border-left: 5px solid #2b6cb0;{% endif %}">
+            <!-- НАЧАЛО ЦИКЛА ВЫВОДА КАРТОЧЕК -->
+            {% for item in equipments %}
+                <div class="card card-equipment" style="position: relative; {% if item.is_expired %}border-left: 5px solid #e53e3e;{% else %}border-left: 5px solid #2b6cb0;{% endif %}">
 
-                    <!-- Кнопка удаления -->
+                    <!-- КНОПКА УДАЛЕНИЯ -->
                     <a href="{% url 'delete_equipment' item.id %}"
-                       onclick="return confirm('Вы уверены, что хотите удалить это устройство?');"
+                       onclick="return confirm('Вы уверены, что хотите удалить это устройство из базы данных?');"
                        style="position: absolute; top: 15px; right: 15px; color: #e53e3e; text-decoration: none; font-size: 18px; font-weight: bold; cursor: pointer;"
                        title="Удалить устройство">
                         ❌
@@ -113,22 +113,24 @@
 
                     <h4 style="color: #2b6cb0; margin-bottom: 10px; padding-right: 25px;">💻 {{ item.name }}</h4>
 
-                    <div style="margin-bottom: 8px;">
+                    <div style="margin-bottom: 6px; font-size: 14px;">
                         <strong>S/N:</strong> <code>{{ item.serial_number }}</code>
                     </div>
 
-                    <!-- Вывод дат и статуса -->
-                    <div style="font-size: 14px; margin-bottom: 5px;">
-                        <span>📅 Куплено: {{ item.purchase_date|date:"d.m.Y" }}</span>
+                    <div style="margin-bottom: 10px; font-size: 14px;">
+                        <strong>📍 Место чека:</strong> <span style="background-color: #edf2f7; padding: 2px 6px; border-radius: 4px; font-weight: bold; color: #4a5568;">{{ item.receipt_location }}</span>
                     </div>
-                    <div style="font-size: 14px; margin-bottom: 5px;">
+
+                    <div style="font-size: 13px; color: #4a5568; margin-bottom: 4px;">
+                        <span>📅 Дата покупки: {{ item.purchase_date|date:"d.m.Y" }}</span>
+                    </div>
+                    <div style="font-size: 13px; color: #4a5568; margin-bottom: 4px;">
                         <span>⏳ Окончание гарантии: <strong>{{ item.end_warranty_date|date:"d.m.Y" }}</strong></span>
                     </div>
 
-                    <div class="flex-between" style="margin-top: 10px; padding-top: 8px;">
+                    <div class="flex-between" style="margin-top: 12px; padding-top: 8px;">
                         <span class="badge">🛡️ Срок: {{ item.warranty_months }} мес.</span>
 
-                        <!-- Отображаем ярлык статуса на основе флага is_expired -->
                         {% if item.is_expired %}
                             <span style="color: #e53e3e; font-weight: bold; font-size: 12px; background: #fff5f5; padding: 3px 8px; border-radius: 4px; border: 1px solid #fed7d7;">
                                 ⚠️ Гарантия истекла
@@ -141,13 +143,13 @@
                     </div>
                 </div>
             {% empty %}
-
-                <div class="card" style="background-color: #ebf8ff; color: #2b6cb0; border-color: #bee3f8;">
-                    Оборудования пока нет. Заполните форму слева, чтобы добавить первое устройство!
+                <div class="card" style="background-color: #ebf8ff; color: #2b6cb0; border-color: #bee3f8; font-style: italic;">
+                    Оборудования по вашему запросу не найдено. Заполните форму слева или измените параметры поиска!
                 </div>
             {% endfor %}
-        </div>
+            <!-- ЦИКЛ И ПРОВЕРКА EMPTY УСПЕШНО ЗАКРЫТЫ -->
 
+        </div>
     </div>
 
 </body>

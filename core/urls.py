@@ -5,6 +5,7 @@ from index import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
-    # Django ищет именно это имя: name='delete_equipment'
     path('delete/<int:item_id>/', views.delete_equipment, name='delete_equipment'),
+    # Новый маршрут для скачивания отчета
+    path('download-report/', views.download_report, name='download_report'),
 ]

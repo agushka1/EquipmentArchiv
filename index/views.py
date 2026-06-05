@@ -3,7 +3,7 @@ from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from .models import Equipment
 from .forms import EquipmentForm
-
+from django.http import HttpResponse
 
 def index(request):
     if request.method == 'POST':
@@ -61,3 +61,45 @@ def delete_equipment(request, item_id):
     item = Equipment.objects.get(id=item_id)
     item.delete()
     return redirect('index')
+
+
+def download_report(request):
+    # 1. Забираем данные из БД
+    equipments_queryset = Equipment.objects.all().order_by('name')
+    current_date = timezone.now().date()
+
+    active_warranty = []
+    expired_warranty = []
+
+    # 2. Сортируем устройства по статусу гарантии
+    for item in equipments_queryset:
+        end_warranty_date = item.purchase_date + relativedelta(months=item.warranty_months)
+        item_info = f"• {item.name} | S/N: {item.serial_number} | Чек: {item.receipt_location} | Окончание гарантии: {end_warranty_date.strftime('%d.%m.%Y')}"
+
+        if current_date > end_warranty_date:
+            expired_warranty.append(item_info)
+        else:
+            active_warranty.append(item_info)
+
+    # 3. Формируем текст самого файла
+    report_text = "=== ОТЧЕТ ПО СОСТОЯНИЮ ОБОРУДОВАНИЯ СТРАНИЦЫ ===\n\n"
+
+    report_text += f"🟢 НА ГАРАНТИИ (Всего: {len(active_warranty)})\n"
+    report_text += "--------------------------------------------------\n"
+    if active_warranty:
+        report_text += "\n".join(active_warranty) + "\n"
+    else:
+        report_text += "Устройств на гарантии нет.\n"
+
+    report_text += f"\n🔴 ГАРАНТИЯ ИСТЕКЛА (Всего: {len(expired_warranty)})\n"
+    report_text += "--------------------------------------------------\n"
+    if expired_warranty:
+        report_text += "\n".join(expired_warranty) + "\n"
+    else:
+        report_text += "Устройств с истекшей гарантией нет.\n"
+
+    # 4. Настраиваем HttpResponse так, чтобы браузер понял, что это файл для скачивания
+    response = HttpResponse(report_text, content_type='text/plain; charset=utf-8')
+    response['Content-Disposition'] = 'attachment; filename="equipment_report.txt"'
+
+    return response

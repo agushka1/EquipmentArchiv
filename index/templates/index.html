@@ -35,7 +35,7 @@
 
     <!-- Шапка сайта -->
     <div class="navbar">
-        <div class="navbar-brand">⚙️ Склад Оборудования</div>
+        <div class="navbar-brand">⚙️ Склад Оборудования | {{ username }}</div>
     </div>
 
     <div class="container">
@@ -71,7 +71,7 @@
         <div class="column-list">
             <h3>📋 Зарегистрировано в PostgreSQL</h3>
 
-            <!-- БЛОК ТОЧНОГО ПОИСКА И БЫСТРЫХ ФИЛЬТРОВ -->
+            <!-- БЛОК ТОЧНОГО ПОИСКА, БЫСТРЫХ ФИЛЬТРОВ И СКАЧИВАНИЯ -->
             <div style="background: #fff; border: 1px solid #e2e8f0; padding: 15px; margin-bottom: 20px; border-radius: 8px;">
                 <form method="GET" action="{% url 'index' %}" style="display: flex; flex-direction: column; gap: 10px;">
 
@@ -80,30 +80,36 @@
                         <button type="submit" class="btn" style="width: auto; padding: 10px 20px; margin-bottom: 0;">Найти</button>
                     </div>
 
-                    <div style="display: flex; gap: 10px; align-items: center; margin-top: 5px;">
-                        <span style="font-size: 14px; font-weight: bold; color: #4a5568;">Гарантия:</span>
+                    <div style="display: flex; gap: 10px; align-items: center; margin-top: 5px; justify-content: space-between; flex-wrap: wrap;">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <span style="font-size: 14px; font-weight: bold; color: #4a5568;">Гарантия:</span>
 
-                        <a href="?warranty=&search={{ search_query }}" style="text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; background: {% if not warranty_filter %}#2b6cb0; color: white;{% else %}#edf2f7; color: #4a5568;{% endif %}">
-                            Все
-                        </a>
+                            <a href="?warranty=&search={{ search_query }}" style="text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; background: {% if not warranty_filter %}#2b6cb0; color: white;{% else %}#edf2f7; color: #4a5568;{% endif %}">
+                                Все
+                            </a>
 
-                        <a href="?warranty=active&search={{ search_query }}" style="text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; background: {% if warranty_filter == 'active' %}#44b78b; color: white;{% else %}#edf2f7; color: #4a5568;{% endif %}">
-                            🟢 Активна
-                        </a>
+                            <a href="?warranty=active&search={{ search_query }}" style="text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; background: {% if warranty_filter == 'active' %}#44b78b; color: white;{% else %}#edf2f7; color: #4a5568;{% endif %}">
+                                🟢 Активна
+                            </a>
 
-                        <a href="?warranty=expired&search={{ search_query }}" style="text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; background: {% if warranty_filter == 'expired' %}#e53e3e; color: white;{% else %}#edf2f7; color: #4a5568;{% endif %}">
-                            🔴 Истекла
+                            <a href="?warranty=expired&search={{ search_query }}" style="text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; background: {% if warranty_filter == 'expired' %}#e53e3e; color: white;{% else %}#edf2f7; color: #4a5568;{% endif %}">
+                                🔴 Истекла
+                            </a>
+                        </div>
+
+                        <!-- КНОПКА СКАЧИВАНИЯ ОТЧЕТА -->
+                        <a href="{% url 'download_report' %}" style="text-decoration: none; background-color: #4a5568; color: white; padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: bold; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#2d3748'" onmouseout="this.style.backgroundColor='#4a5568'">
+                            📥 Скачать отчет (.txt)
                         </a>
                     </div>
 
                 </form>
             </div>
 
-            <!-- НАЧАЛО ЦИКЛА ВЫВОДА КАРТОЧЕК -->
+            <!-- ВЫВОД КАРТОЧЕК ОБОРУДОВАНИЯ -->
             {% for item in equipments %}
                 <div class="card card-equipment" style="position: relative; {% if item.is_expired %}border-left: 5px solid #e53e3e;{% else %}border-left: 5px solid #2b6cb0;{% endif %}">
 
-                    <!-- КНОПКА УДАЛЕНИЯ -->
                     <a href="{% url 'delete_equipment' item.id %}"
                        onclick="return confirm('Вы уверены, что хотите удалить это устройство из базы данных?');"
                        style="position: absolute; top: 15px; right: 15px; color: #e53e3e; text-decoration: none; font-size: 18px; font-weight: bold; cursor: pointer;"
@@ -125,7 +131,7 @@
                         <span>📅 Дата покупки: {{ item.purchase_date|date:"d.m.Y" }}</span>
                     </div>
                     <div style="font-size: 13px; color: #4a5568; margin-bottom: 4px;">
-                        <span>⏳ Окончание гарантии: <strong>{{ item.end_warranty_date|date:"d.m.Y" }}</strong></span>
+                        <span>⏳ Окончание操作: <strong>{{ item.end_warranty_date|date:"d.m.Y" }}</strong></span>
                     </div>
 
                     <div class="flex-between" style="margin-top: 12px; padding-top: 8px;">
@@ -147,7 +153,6 @@
                     Оборудования по вашему запросу не найдено. Заполните форму слева или измените параметры поиска!
                 </div>
             {% endfor %}
-            <!-- ЦИКЛ И ПРОВЕРКА EMPTY УСПЕШНО ЗАКРЫТЫ -->
 
         </div>
     </div>

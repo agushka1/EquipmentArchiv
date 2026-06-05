@@ -35,7 +35,7 @@
 
     <!-- Шапка сайта -->
     <div class="navbar">
-        <div class="navbar-brand">⚙️ Склад Оборудования | {{ username }}</div>
+        <div class="navbar-brand">⚙️ Архив Оборудования</div>
     </div>
 
     <div class="container">
@@ -131,7 +131,7 @@
                         <span>📅 Дата покупки: {{ item.purchase_date|date:"d.m.Y" }}</span>
                     </div>
                     <div style="font-size: 13px; color: #4a5568; margin-bottom: 4px;">
-                        <span>⏳ Окончание操作: <strong>{{ item.end_warranty_date|date:"d.m.Y" }}</strong></span>
+                        <span>⏳ Окончание: <strong>{{ item.end_warranty_date|date:"d.m.Y" }}</strong></span>
                     </div>
 
                     <div class="flex-between" style="margin-top: 12px; padding-top: 8px;">

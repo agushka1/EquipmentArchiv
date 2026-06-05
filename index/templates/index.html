@@ -34,7 +34,7 @@
 
     <!-- Шапка сайта -->
     <div class="navbar">
-        <div class="navbar-brand">⚙️ Склад Оборудования | {{ username }}</div>
+        <div class="navbar-brand">⚙️ Склад Оборудования</div>
     </div>
 
     <div class="container">
@@ -65,20 +65,83 @@
 
         <!-- ПРАВАЯ КОЛОНКА: Список устройств -->
         <div class="column-list">
-            <h3>📋 Зарегистрировано в PostgreSQL</h3>
+            <h3>📋 Зарегистрировано в базе данных Архива</h3>
+            <!-- БЛОК ПОИСКА И ФИЛЬТРОВ -->
+            <div style="background: #fff; border: 1px solid #e2e8f0; padding: 15px; margin-bottom: 20px; border-radius: 8px;">
+                <form method="GET" action="{% url 'index' %}" style="display: flex; flex-direction: column; gap: 10px;">
 
-            {% for item in equipments %}
-                <div class="card card-equipment">
-                    <h4 style="color: #2b6cb0; margin-bottom: 10px;">💻 {{ item.name }}</h4>
+                                        <!-- Поисковая строка -->
+                    <div style="display: flex; gap: 10px;">
+                        <!-- Изменили подсказку на "Поиск по серийному номеру..." -->
+                        <input type="text" name="search" value="{{ search_query }}" placeholder="Поиск по серийному номеру..." style="margin-bottom: 0; flex-grow: 1;">
+                        <button type="submit" class="btn" style="width: auto; padding: 10px 20px; margin-bottom: 0;">Найти</button>
+                    </div>
+
+
+                    <!-- Кнопки быстрой фильтрации гарантии -->
+                    <div style="display: flex; gap: 10px; align-items: center; margin-top: 5px;">
+                        <span style="font-size: 14px; font-weight: bold; color: #4a5568;">Гарантия:</span>
+
+                        <a href="?warranty=&search={{ search_query }}" style="text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; background: {% if not warranty_filter %}#2b6cb0; color: white;{% else %}#edf2f7; color: #4a5568;{% endif %}">
+                            Все
+                        </a>
+
+                        <a href="?warranty=active&search={{ search_query }}" style="text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; background: {% if warranty_filter == 'active' %}#44b78b; color: white;{% else %}#edf2f7; color: #4a5568;{% endif %}">
+                            🟢 Активна
+                        </a>
+
+                        <a href="?warranty=expired&search={{ search_query }}" style="text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; background: {% if warranty_filter == 'expired' %}#e53e3e; color: white;{% else %}#edf2f7; color: #4a5568;{% endif %}">
+                            🔴 Истекла
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+            <!-- КОНЕЦ БЛОКА ФИЛЬТРОВ -->
+
+                        {% for item in equipments %}
+                <!-- Динамически меняем цвет левой полосы карточки: синяя для активной, красная для истекшей -->
+                <div class="card card-equipment" style="position: relative; {% if item.is_expired %}border-left: 5px solid #e53e3e; background-color: #ffffff;{% else %}border-left: 5px solid #2b6cb0;{% endif %}">
+
+                    <!-- Кнопка удаления -->
+                    <a href="{% url 'delete_equipment' item.id %}"
+                       onclick="return confirm('Вы уверены, что хотите удалить это устройство?');"
+                       style="position: absolute; top: 15px; right: 15px; color: #e53e3e; text-decoration: none; font-size: 18px; font-weight: bold; cursor: pointer;"
+                       title="Удалить устройство">
+                        ❌
+                    </a>
+
+                    <h4 style="color: #2b6cb0; margin-bottom: 10px; padding-right: 25px;">💻 {{ item.name }}</h4>
+
                     <div style="margin-bottom: 8px;">
                         <strong>S/N:</strong> <code>{{ item.serial_number }}</code>
                     </div>
-                    <div class="flex-between">
+
+                    <!-- Вывод дат и статуса -->
+                    <div style="font-size: 14px; margin-bottom: 5px;">
                         <span>📅 Куплено: {{ item.purchase_date|date:"d.m.Y" }}</span>
-                        <span class="badge">🛡️ {{ item.warranty_months }} мес.</span>
+                    </div>
+                    <div style="font-size: 14px; margin-bottom: 5px;">
+                        <span>⏳ Окончание гарантии: <strong>{{ item.end_warranty_date|date:"d.m.Y" }}</strong></span>
+                    </div>
+
+                    <div class="flex-between" style="margin-top: 10px; padding-top: 8px;">
+                        <span class="badge">🛡️ Срок: {{ item.warranty_months }} мес.</span>
+
+                        <!-- Отображаем ярлык статуса на основе флага is_expired -->
+                        {% if item.is_expired %}
+                            <span style="color: #e53e3e; font-weight: bold; font-size: 12px; background: #fff5f5; padding: 3px 8px; border-radius: 4px; border: 1px solid #fed7d7;">
+                                ⚠️ Гарантия истекла
+                            </span>
+                        {% else %}
+                            <span style="color: #38a169; font-weight: bold; font-size: 12px; background: #f0fff4; padding: 3px 8px; border-radius: 4px; border: 1px solid #c6f6d5;">
+                                ✅ На гарантии
+                            </span>
+                        {% endif %}
                     </div>
                 </div>
             {% empty %}
+
                 <div class="card" style="background-color: #ebf8ff; color: #2b6cb0; border-color: #bee3f8;">
                     Оборудования пока нет. Заполните форму слева, чтобы добавить первое устройство!
                 </div>
